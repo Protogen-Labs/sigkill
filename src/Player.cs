@@ -16,6 +16,8 @@ public class Player : KinematicBody {
 	public bool sprintEnabled = true;
 	public float maxFloorAngle = Mathf.Deg2Rad(45);
 	public float speed = 0;
+	public bool jumpInput = false;
+	public bool sprintInput = false;
 
 
 	public override void _Ready() {
@@ -29,6 +31,10 @@ public class Player : KinematicBody {
 		moveAxis.x = Input.GetActionStrength("move_forward") - Input.GetActionStrength("move_backward");
 		moveAxis.y = Input.GetActionStrength("move_right") - Input.GetActionStrength("move_left");
 
+		if (Input.IsActionJustPressed("move_jump"))
+			jumpInput = true;
+		if (Input.IsActionPressed("move_sprint"))
+			sprintInput = true;
 		
 	}
 }
