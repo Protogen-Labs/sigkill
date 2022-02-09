@@ -8,14 +8,14 @@ public class Player: KinematicBody {
 	public Spatial head;
 	public  NodePath cameraPath = "camera";
 	public Camera camera;
-	public Vector2 mouseAxis = new Vector2(0,0);
-	public Vector3 velocity = new Vector3(0,0,0);
-	public Vector3 direction = new Vector3(0,0,0);
-	public Vector2 moveAxis = new Vector2(0,0);
-	public Vector3 snap = new Vector3(0,0,0);
+	public Vector2 mouseAxis = new Vector2();
+	public Vector3 velocity = new Vector3();
+	public Vector3 direction = new Vector3();
+	public Vector2 moveAxis = new Vector2();
+	public Vector3 snap = new Vector3();
 	public bool sprinting = false;
 	public bool sprintEnabled = true;
-	public float maxFloorAngle = Mathf.Deg2Rad(45);
+	public float maxFloorAngle = Mathf.Deg2Rad(46);
 	public float speed = 0;
 	public bool jumpInput = false;
 	public bool sprintInput = false;
@@ -40,5 +40,26 @@ public class Player: KinematicBody {
 
 	public override void _PhysicsProcess(float delta) {
 		
+	}
+
+	public override void _Input(InputEvent input) {
+		if (input is InputEventMouseMotion mouseMotion) {
+			mouseAxis = mouseMotion.Relative;
+			cameraRotation();
+		}
+	}
+
+	public void walk(float delta) {
+
+	}
+
+	public void cameraRotation() {
+		if (mouseAxis.Length() > 0) {
+			float horizontal = -mouseAxis.x * (mouseSensitivity / 100);
+			float vertical   = -mouseAxis.y * (mouseSensitivity / 100);
+			mouseAxis = new Vector2();
+			RotateY(Mathf.Deg2Rad(horizontal));
+			head.RotateX(Mathf.Deg2Rad(vertical));
+		}
 	}
 }
