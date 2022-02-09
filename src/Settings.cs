@@ -11,5 +11,5 @@ public class Settings {
 	public static float deceleration = 10;
 	public static float airControl = .3f;
 	public static float jumpHeight = 10;
-	public static bool debug = true;
+	public const bool debug = true;
 }

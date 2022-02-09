@@ -2,7 +2,8 @@ using Godot;
 using System;
 using static Settings;
 
-public class Player : KinematicBody {
+public class Player: KinematicBody {
+	public IWeapon heldWeapon;
 	public  NodePath headPath = "Head";
 	public Spatial head;
 	public  NodePath cameraPath = "camera";
@@ -35,6 +36,9 @@ public class Player : KinematicBody {
 			jumpInput = true;
 		if (Input.IsActionPressed("move_sprint"))
 			sprintInput = true;
+	}
+
+	public override void _PhysicsProcess(float delta) {
 		
 	}
 }

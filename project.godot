@@ -14,6 +14,10 @@ config/name="Hellstrafe"
 run/main_scene="res://scene/Main.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+Preload="*res://src/Preload.cs"
+
 [input]
 
 ui_accept={
