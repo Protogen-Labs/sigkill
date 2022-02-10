@@ -27,6 +27,7 @@ public class Player: KinematicBody {
 		head = GetNode<Spatial>(headPath);
 		camera = head.GetNode<Camera>(cameraPath);
 		camera.Fov = fov;
+		updateCameraRotation();
 	}
 
 	public override void _Process(float delta) {
@@ -126,7 +127,13 @@ public class Player: KinematicBody {
 	}
 
 	public void updateCameraRotation() {
-		if (is2d) return;
+		if (is2d) {
+			Rotation = new Vector3();
+			head.Rotation = new Vector3();
+			camera.Translation = new Vector3(0,5,10);
+			camera.Rotation = new Vector3(Mathf.Deg2Rad(-25),0,0);
+			return;
+		}
 
 		if (mouseAxis.Length() > 0) {
 			float horizontal = -mouseAxis.x * (mouseSensitivity / 100);
@@ -138,7 +145,6 @@ public class Player: KinematicBody {
 				head.Rotation = new Vector3(minHeadAngle, head.Rotation.y, head.Rotation.z);
 			if (head.Rotation.x > maxHeadAngle)
 				head.Rotation = new Vector3(maxHeadAngle, head.Rotation.y, head.Rotation.z);
-			
 		}
 	}
 }
