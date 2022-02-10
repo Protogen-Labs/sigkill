@@ -123,7 +123,7 @@ public class Player: KinematicBody {
 	}
 
 	public bool canSprint() {
-		return sprintEnabled && IsOnFloor() && sprintInput && moveAxis.x >= 0.5;
+		return sprintEnabled && IsOnFloor() && sprintInput;
 	}
 
 	public void updateCameraRotation() {
