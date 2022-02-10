@@ -4,9 +4,11 @@ using static Settings;
 
 public class Player: KinematicBody {
 	public IWeapon heldWeapon;
-	public  NodePath headPath = "Head";
+	public float minHeadAngle = Mathf.Deg2Rad(-45);
+	public float maxHeadAngle = Mathf.Deg2Rad(45);
+	public NodePath headPath = "Head";
 	public Spatial head;
-	public  NodePath cameraPath = "camera";
+	public NodePath cameraPath = "camera";
 	public Camera camera;
 	public Vector2 mouseAxis = new Vector2();
 	public Vector3 velocity = new Vector3();
@@ -131,6 +133,11 @@ public class Player: KinematicBody {
 			mouseAxis = new Vector2();
 			RotateY(Mathf.Deg2Rad(horizontal));
 			head.RotateX(Mathf.Deg2Rad(vertical));
+			if (head.Rotation.x < minHeadAngle)
+				head.Rotation = new Vector3(minHeadAngle, head.Rotation.y, head.Rotation.z);
+			if (head.Rotation.x > maxHeadAngle)
+				head.Rotation = new Vector3(maxHeadAngle, head.Rotation.y, head.Rotation.z);
+			
 		}
 	}
 }
