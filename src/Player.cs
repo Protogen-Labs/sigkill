@@ -1,5 +1,4 @@
 using Godot;
-using System;
 using static Settings;
 
 public class Player: KinematicBody {

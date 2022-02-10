@@ -1,6 +1,3 @@
-using Godot;
-using System;
-
 public class Settings {
 	public static float mouseSensitivity = 8;
 	public static float fov = 80;
