@@ -1,100 +1,105 @@
 using Godot;
 using static Settings;
 
-public class Player3D: Player2D {
-    public void handleMovement_3D(float delta) {
-		updateInput_3D();
-		if (IsOnFloor()) {
-			snap = -GetFloorNormal() - GetFloorVelocity() * delta;
-			if (velocity.y < 0)
-				velocity.y = 0;
-			tryJump_3D();
+public class Player3D: IPlayer {
+    Player player;
+
+    public Player3D(Player super) {
+        player = super;
+    }
+    public void handleMovement(float delta) {
+		updateInput();
+		if (player.IsOnFloor()) {
+			player.snap = -player.GetFloorNormal() - player.GetFloorVelocity() * delta;
+			if (player.velocity.y < 0)
+				player.velocity.y = 0;
+			tryJump();
 		} else {
-			if (snap != Vector3.Zero && velocity.y != 0)
-				velocity.y = 0;
-			snap = Vector3.Zero;
-			velocity.y -= gravity * delta;
+			if (player.snap != Vector3.Zero && player.velocity.y != 0)
+				player.velocity.y = 0;
+			player.snap = Vector3.Zero;
+			player.velocity.y -= gravity * delta;
 		}
 
-		checkSprint_3D(delta);
-		applyAccel_3D(delta);
+		checkSprint(delta);
+		applyAccel(delta);
 
-		velocity = MoveAndSlideWithSnap(velocity, snap, Vector3.Up, true, 4, maxFloorAngle);
-		jumpInput = false;
-		sprintInput = false;
+		player.velocity = player.MoveAndSlideWithSnap(player.velocity, player.snap, Vector3.Up, true, 4, player.maxFloorAngle);
+		player.jumpInput = false;
+		player.sprintInput = false;
 	}
 
-	public void updateInput_3D() {
-		direction = new Vector3(0,0,0);
-		Basis aim = GlobalTransform.basis;
-		direction = -aim.z * moveAxis.x;
-		direction += aim.x * moveAxis.y;
-		direction.y = 0;
-		direction = direction.Normalized();
+	public void updateInput() {
+		player.direction = new Vector3(0,0,0);
+		Basis aim = player.GlobalTransform.basis;
+		player.direction = -aim.z * player.moveAxis.x;
+		player.direction += aim.x * player.moveAxis.y;
+		player.direction.y = 0;
+		player.direction = player.direction.Normalized();
 	}
 
-	public void applyAccel_3D(float delta) {
-		Vector3 tempVel = velocity;
+	public void applyAccel(float delta) {
+		Vector3 tempVel = player.velocity;
 		float tempAccel;
-		Vector3 target = direction * (walkSpeed + (sprinting? sprintAdd: 0));
+		Vector3 target = player.direction * (walkSpeed + (player.sprinting? sprintAdd: 0));
 
 		tempVel.y = 0;
 		tempAccel = deceleration;
-		if (direction.Dot(tempVel) > 0)
+		if (player.direction.Dot(tempVel) > 0)
 			tempAccel = acceleration;
 		
-		if (!IsOnFloor())
+		if (!player.IsOnFloor())
 			tempAccel *= airControl;
 		
 		tempVel = tempVel.LinearInterpolate(target, tempAccel * delta);
 
-		velocity.x = tempVel.x;
-		velocity.z = tempVel.z;
+		player.velocity.x = tempVel.x;
+		player.velocity.z = tempVel.z;
 
-		if (direction.Dot(velocity) == 0) {
+		if (player.direction.Dot(player.velocity) == 0) {
 			float clamp = 0.01f;
-			if (Mathf.Abs(velocity.x) < clamp)
-				velocity.x = 0;
-			if (Mathf.Abs(velocity.z) < clamp)
-				velocity.z = 0;
+			if (Mathf.Abs(player.velocity.x) < clamp)
+				player.velocity.x = 0;
+			if (Mathf.Abs(player.velocity.z) < clamp)
+				player.velocity.z = 0;
 		}
 	}
 
-	public void tryJump_3D() {
-		if (jumpInput) {
-			velocity.y = jumpHeight;
-			snap = Vector3.Zero;
+	public void tryJump() {
+		if (player.jumpInput) {
+			player.velocity.y = jumpHeight;
+			player.snap = Vector3.Zero;
 		}
 	}
 
-	public void checkSprint_3D(float delta) {
-		if (canSprint_3D()) {
-			camera.Fov = Mathf.Lerp(camera.Fov, fov*1.05f, delta*8);
-			sprinting = true;
+	public void checkSprint(float delta) {
+		if (canSprint()) {
+			player.camera.Fov = Mathf.Lerp(player.camera.Fov, fov*1.05f, delta*8);
+			player.sprinting = true;
 			return;
 		}
-		camera.Fov = Mathf.Lerp(camera.Fov, fov, delta*8);
-		sprinting = false;
+		player.camera.Fov = Mathf.Lerp(player.camera.Fov, fov, delta*8);
+		player.sprinting = false;
 	}
 
-	public bool canSprint_3D() {
-		return sprintEnabled && sprintInput && isMoving_3D();
+	public bool canSprint() {
+		return player.sprintEnabled && player.sprintInput && isMoving();
 	}
 
-	public bool isMoving_3D() {
-		return Mathf.Abs(moveAxis.x) >= 0.5 || Mathf.Abs(moveAxis.y) >= 0.5;
+	public bool isMoving() {
+		return Mathf.Abs(player.moveAxis.x) >= 0.5 || Mathf.Abs(player.moveAxis.y) >= 0.5;
 	}
 
-	public void updateCameraRotation_3D() {
-		float horizontal = -mouseAxis.x * (mouseSensitivity / 100);
-		float vertical   = -mouseAxis.y * (mouseSensitivity / 100);
-		mouseAxis = new Vector2();
-		RotateY(Mathf.Deg2Rad(horizontal));
-		head.RotateX(Mathf.Deg2Rad(vertical));
-		if (head.Rotation.x < minHeadAngle)
-			head.Rotation = new Vector3(minHeadAngle, head.Rotation.y, head.Rotation.z);
-		if (head.Rotation.x > maxHeadAngle)
-			head.Rotation = new Vector3(maxHeadAngle, head.Rotation.y, head.Rotation.z);
-		mouseAxis = new Vector2();
+	public void updateCameraRotation() {
+		float horizontal = -player.mouseAxis.x * (mouseSensitivity / 100);
+		float vertical   = -player.mouseAxis.y * (mouseSensitivity / 100);
+		player.mouseAxis = new Vector2();
+		player.RotateY(Mathf.Deg2Rad(horizontal));
+		player.head.RotateX(Mathf.Deg2Rad(vertical));
+		if (player.head.Rotation.x < player.minHeadAngle)
+			player.head.Rotation = new Vector3(player.minHeadAngle, player.head.Rotation.y, player.head.Rotation.z);
+		if (player.head.Rotation.x > player.maxHeadAngle)
+			player.head.Rotation = new Vector3(player.maxHeadAngle, player.head.Rotation.y, player.head.Rotation.z);
+		player.mouseAxis = new Vector2();
 	}
 }
