@@ -21,7 +21,6 @@ public class Player: KinematicBody {
 	public bool jumpInput = false;
 	public bool sprintInput = false;
 
-
 	public override void _Ready() {
 		heldWeapon = Registry.WEAPON.get(new Identifier("pistol"));
 		Input.SetMouseMode(Input.MouseMode.Captured);
@@ -72,7 +71,7 @@ public class Player: KinematicBody {
 	public void updateInput() {
 		direction = new Vector3(0,0,0);
 		Basis aim = GlobalTransform.basis;
-		direction = -aim.z * moveAxis.x;
+		if (!is2d) direction = -aim.z * moveAxis.x;
 		direction += aim.x * moveAxis.y;
 		direction.y = 0;
 		direction = direction.Normalized();
@@ -127,6 +126,8 @@ public class Player: KinematicBody {
 	}
 
 	public void updateCameraRotation() {
+		if (is2d) return;
+
 		if (mouseAxis.Length() > 0) {
 			float horizontal = -mouseAxis.x * (mouseSensitivity / 100);
 			float vertical   = -mouseAxis.y * (mouseSensitivity / 100);
