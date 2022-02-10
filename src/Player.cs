@@ -16,12 +16,12 @@ public class Player: KinematicBody {
 	public bool sprinting = false;
 	public bool sprintEnabled = true;
 	public float maxFloorAngle = Mathf.Deg2Rad(46);
-	public float speed = 0;
 	public bool jumpInput = false;
 	public bool sprintInput = false;
 
 
 	public override void _Ready() {
+		heldWeapon = Registry.WEAPON.get(new Identifier("pistol"));
 		Input.SetMouseMode(Input.MouseMode.Captured);
 		head = GetNode<Spatial>(headPath);
 		camera = head.GetNode<Camera>(cameraPath);
@@ -39,21 +39,92 @@ public class Player: KinematicBody {
 	}
 
 	public override void _PhysicsProcess(float delta) {
-		
+		updateInput();
+		if (IsOnFloor()) {
+			snap = -GetFloorNormal() - GetFloorVelocity() * delta;
+			if (velocity.y < 0)
+				velocity.y = 0;
+			tryJump();
+		} else {
+			if (snap != Vector3.Zero && velocity.y != 0)
+				velocity.y = 0;
+			snap = Vector3.Zero;
+			velocity.y -= gravity * delta;
+		}
+
+		checkSprint(delta);
+		applyAccel(delta);
+
+		velocity = MoveAndSlideWithSnap(velocity, snap, Vector3.Up, true, 4, maxFloorAngle);
+		jumpInput = false;
+		sprintInput = false;
 	}
 
 	public override void _Input(InputEvent input) {
 		if (input is InputEventMouseMotion mouseMotion) {
 			mouseAxis = mouseMotion.Relative;
-			cameraRotation();
+			updateCameraRotation();
 		}
 	}
 
-	public void walk(float delta) {
-
+	public void updateInput() {
+		direction = new Vector3(0,0,0);
+		Basis aim = GlobalTransform.basis;
+		direction = -aim.z * moveAxis.x;
+		direction += aim.x * moveAxis.y;
+		direction.y = 0;
+		direction = direction.Normalized();
 	}
 
-	public void cameraRotation() {
+	public void applyAccel(float delta) {
+		Vector3 tempVel = velocity;
+		float tempAccel;
+		Vector3 target = direction * (walkSpeed + (sprinting? sprintAdd: 0));
+
+		tempVel.y = 0;
+		tempAccel = deceleration;
+		if (direction.Dot(tempVel) > 0)
+			tempAccel = acceleration;
+		
+		if (!IsOnFloor())
+			tempAccel *= airControl;
+		
+		tempVel = tempVel.LinearInterpolate(target, tempAccel * delta);
+
+		velocity.x = tempVel.x;
+		velocity.z = tempVel.z;
+
+		if (direction.Dot(velocity) == 0) {
+			float clamp = 0.01f;
+			if (Mathf.Abs(velocity.x) < clamp)
+				velocity.x = 0;
+			if (Mathf.Abs(velocity.z) < clamp)
+				velocity.z = 0;
+		}
+	}
+
+	public void tryJump() {
+		if (jumpInput) {
+			velocity.y = jumpHeight;
+			snap = Vector3.Zero;
+		}
+	}
+
+	public void checkSprint(float delta) {
+		if (canSprint()) {
+			camera.Fov = Mathf.Lerp(camera.Fov, fov*1.05f, delta*8);
+			sprinting = true;
+			return;
+		}
+		camera.Fov = Mathf.Lerp(camera.Fov, fov, delta*8);
+		sprinting = false;
+	}
+
+	public bool canSprint() {
+		return sprintEnabled && IsOnFloor() && sprintInput && moveAxis.x >= 0.5;
+	}
+
+	public void updateCameraRotation() {
 		if (mouseAxis.Length() > 0) {
 			float horizontal = -mouseAxis.x * (mouseSensitivity / 100);
 			float vertical   = -mouseAxis.y * (mouseSensitivity / 100);
