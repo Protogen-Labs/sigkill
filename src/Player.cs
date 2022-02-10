@@ -26,7 +26,6 @@ public class Player: KinematicBody {
 		head = GetNode<Spatial>(headPath);
 		camera = head.GetNode<Camera>(cameraPath);
 		camera.Fov = fov;
-		updateCameraRotation();
 	}
 
 	public override void _Process(float delta) {
@@ -40,7 +39,25 @@ public class Player: KinematicBody {
 	}
 
 	public override void _PhysicsProcess(float delta) {
-		updateInput();
+		if (is2d) 
+			handleMovement2d(delta);
+		else handleMovement3d(delta);
+	}
+
+	public override void _Input(InputEvent input) {
+		if (input is InputEventMouseMotion mouseMotion) {
+			mouseAxis = mouseMotion.Relative;
+			if (!is2d)
+				updateCameraRotation3d();
+		}
+	}
+
+	public void handleMovement2d(float delta) {
+		//TODO: Impliment movement physics for 2d
+	}
+
+	public void handleMovement3d(float delta) {
+		updateInput3d();
 		if (IsOnFloor()) {
 			snap = -GetFloorNormal() - GetFloorVelocity() * delta;
 			if (velocity.y < 0)
@@ -61,17 +78,10 @@ public class Player: KinematicBody {
 		sprintInput = false;
 	}
 
-	public override void _Input(InputEvent input) {
-		if (input is InputEventMouseMotion mouseMotion) {
-			mouseAxis = mouseMotion.Relative;
-			updateCameraRotation();
-		}
-	}
-
-	public void updateInput() {
+	public void updateInput3d() {
 		direction = new Vector3(0,0,0);
 		Basis aim = GlobalTransform.basis;
-		if (!is2d) direction = -aim.z * moveAxis.x;
+		direction = -aim.z * moveAxis.x;
 		direction += aim.x * moveAxis.y;
 		direction.y = 0;
 		direction = direction.Normalized();
@@ -126,18 +136,10 @@ public class Player: KinematicBody {
 	}
 
 	public bool isMoving() {
-		return (!is2d && Mathf.Abs(moveAxis.x) >= 0.5) || Mathf.Abs(moveAxis.y) >= 0.5;
+		return Mathf.Abs(moveAxis.x) >= 0.5 || Mathf.Abs(moveAxis.y) >= 0.5;
 	}
 
-	public void updateCameraRotation() {
-		if (is2d) {
-			Rotation = new Vector3();
-			head.Rotation = new Vector3();
-			camera.Translation = new Vector3(0,5,10);
-			camera.Rotation = new Vector3(Mathf.Deg2Rad(-25),0,0);
-			return;
-		}
-
+	public void updateCameraRotation3d() {
 		if (mouseAxis.Length() > 0) {
 			float horizontal = -mouseAxis.x * (mouseSensitivity / 100);
 			float vertical   = -mouseAxis.y * (mouseSensitivity / 100);
