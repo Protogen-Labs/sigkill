@@ -3,12 +3,17 @@ using static Settings;
 
 public class Player3D: IPlayer {
     Player player;
+	public Camera camera {
+		get {
+			return player.camera;
+		}
+	}
 
     public Player3D(Player super) {
         player = super;
     }
     public void handleMovement(float delta) {
-		player.camera.Current = true;
+		camera.Current = true;
 
 		updateInput();
 		if (player.IsOnFloor()) {
@@ -76,11 +81,11 @@ public class Player3D: IPlayer {
 
 	public void checkSprint(float delta) {
 		if (canSprint()) {
-			player.camera.Fov = Mathf.Lerp(player.camera.Fov, fov*1.05f, delta*8);
+			camera.Fov = Mathf.Lerp(camera.Fov, fov*1.05f, delta*8);
 			player.sprinting = true;
 			return;
 		}
-		player.camera.Fov = Mathf.Lerp(player.camera.Fov, fov, delta*8);
+		camera.Fov = Mathf.Lerp(camera.Fov, fov, delta*8);
 		player.sprinting = false;
 	}
 
