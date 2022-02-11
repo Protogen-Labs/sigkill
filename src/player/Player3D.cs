@@ -8,6 +8,8 @@ public class Player3D: IPlayer {
         player = super;
     }
     public void handleMovement(float delta) {
+		player.camera.Current = true;
+
 		updateInput();
 		if (player.IsOnFloor()) {
 			player.snap = -player.GetFloorNormal() - player.GetFloorVelocity() * delta;
