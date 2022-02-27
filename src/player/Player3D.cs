@@ -3,6 +3,8 @@ using static Settings;
 
 public class Player3D: IPlayer {
     Player player;
+	int currentJumps = 0; 
+	int coyote = 0;
 	public Camera camera {
 		get {
 			return player.camera;
@@ -17,15 +19,26 @@ public class Player3D: IPlayer {
 
 		updateInput();
 		if (player.IsOnFloor()) {
+			coyote = 0;
 			player.snap = -player.GetFloorNormal() - player.GetFloorVelocity() * delta;
 			if (player.velocity.y < 0)
 				player.velocity.y = 0;
+			currentJumps = 0;
 			tryJump();
+		} else if (coyote < 7){
+			if (player.snap != Vector3.Zero && player.velocity.y != 0)
+				player.velocity.y = 0;
+			player.snap = Vector3.Zero;
+			player.velocity.y -= gravity * delta;
+			coyote ++;
+			 tryJump();
+
 		} else {
 			if (player.snap != Vector3.Zero && player.velocity.y != 0)
 				player.velocity.y = 0;
 			player.snap = Vector3.Zero;
 			player.velocity.y -= gravity * delta;
+			if (currentJumps < maxJumps) tryJump();
 		}
 
 		checkSprint(delta);
@@ -76,6 +89,8 @@ public class Player3D: IPlayer {
 		if (player.jumpInput) {
 			player.velocity.y = jumpHeight;
 			player.snap = Vector3.Zero;
+			currentJumps ++;
+			coyote = 7;
 		}
 	}
 

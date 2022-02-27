@@ -7,7 +7,9 @@ public class Settings {
 	public static float acceleration = 8;
 	public static float deceleration = 10;
 	public static float airControl = .3f;
-	public static float jumpHeight = 10;
+	public static float jumpHeight = 15;
 	public static bool is2d = false;
 	public const bool debug = true;
+
+	public static int maxJumps = 2;
 }
