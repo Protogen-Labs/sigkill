@@ -30,9 +30,8 @@ public class Player3D: IPlayer {
 				player.velocity.y = 0;
 			player.snap = Vector3.Zero;
 			player.velocity.y -= gravity * delta;
-			coyote ++;
-			 tryJump();
-
+			coyote++;
+			tryJump();
 		} else {
 			if (player.snap != Vector3.Zero && player.velocity.y != 0)
 				player.velocity.y = 0;
@@ -89,7 +88,7 @@ public class Player3D: IPlayer {
 		if (player.jumpInput) {
 			player.velocity.y = jumpHeight;
 			player.snap = Vector3.Zero;
-			currentJumps ++;
+			currentJumps++;
 			coyote = 7;
 		}
 	}
