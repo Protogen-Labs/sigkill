@@ -2,13 +2,6 @@ using Godot;
 using static Settings;
 
 public class Player: KinematicBody {
-	private IPlayer _2d;
-	private IPlayer _3d;
-	public IPlayer currMode {
-		get {
-			return is2d? _2d: _3d;
-		}
-	}
 
 	public IWeapon heldWeapon;
 	public float minHeadAngle = Mathf.Deg2Rad(-45);
@@ -27,10 +20,10 @@ public class Player: KinematicBody {
 	public float maxFloorAngle = Mathf.Deg2Rad(46);
 	public bool jumpInput = false;
 	public bool sprintInput = false;
+	int currJumps = 0; 
+	int coyote = 0;
 
 	public override void _Ready() {
-		_2d = new Player2D(this);
-		_3d = new Player3D(this);
 		heldWeapon = Registry.WEAPON.get(new Identifier("pistol"));
 		Input.SetMouseMode(Input.MouseMode.Captured);
 		head = GetNode<Spatial>(headPath);
@@ -49,13 +42,124 @@ public class Player: KinematicBody {
 	}
 
 	public override void _PhysicsProcess(float delta) {
-		currMode.handleMovement(delta);
+		handleMovement(delta);
 	}
 
 	public override void _Input(InputEvent input) {
 		if (input is InputEventMouseMotion mouseMotion) {
 			mouseAxis = mouseMotion.Relative;
-			currMode.updateCameraRotation();
+			updateCameraRotation();
 		}
+	}
+
+	public void handleMovement(float delta) {
+		camera.Current = true;
+
+		updateInput();
+		if (IsOnFloor()) {
+			coyote = 0;
+			snap = -GetFloorNormal() - GetFloorVelocity() * delta;
+			if (velocity.y < 0)
+				velocity.y = 0;
+			currJumps = 0;
+			tryJump();
+		} else if (coyote < 7){
+			if (snap != Vector3.Zero && velocity.y != 0)
+				velocity.y = 0;
+			snap = Vector3.Zero;
+			velocity.y -= gravity * delta;
+			coyote++;
+			tryJump();
+		} else {
+			if (currJumps == 0) currJumps = 1;
+			if (snap != Vector3.Zero && velocity.y != 0)
+				velocity.y = 0;
+			snap = Vector3.Zero;
+			velocity.y -= gravity * delta;
+			if (currJumps < maxJumps) tryJump();
+		}
+
+		checkSprint(delta);
+		applyAccel(delta);
+
+		velocity = MoveAndSlideWithSnap(velocity, snap, Vector3.Up, true, 4, maxFloorAngle);
+		jumpInput = false;
+		sprintInput = false;
+	}
+
+	public void updateInput() {
+		direction = new Vector3(0,0,0);
+		Basis aim = GlobalTransform.basis;
+		direction = -aim.z * moveAxis.x;
+		direction += aim.x * moveAxis.y;
+		direction.y = 0;
+		direction = direction.Normalized();
+	}
+
+	public void applyAccel(float delta) {
+		Vector3 tempVel = velocity;
+		float tempAccel;
+		Vector3 target = direction * (walkSpeed + (sprinting? sprintAdd: 0));
+
+		tempVel.y = 0;
+		tempAccel = deceleration;
+		if (direction.Dot(tempVel) > 0)
+			tempAccel = acceleration;
+		
+		if (!IsOnFloor())
+			tempAccel *= airControl;
+		
+		tempVel = tempVel.LinearInterpolate(target, tempAccel * delta);
+
+		velocity.x = tempVel.x;
+		velocity.z = tempVel.z;
+
+		if (direction.Dot(velocity) == 0) {
+			float clamp = 0.01f;
+			if (Mathf.Abs(velocity.x) < clamp)
+				velocity.x = 0;
+			if (Mathf.Abs(velocity.z) < clamp)
+				velocity.z = 0;
+		}
+	}
+
+	public void tryJump() {
+		if (jumpInput) {
+			velocity.y = jumpHeight;
+			snap = Vector3.Zero;
+			currJumps++;
+			coyote = 7;
+		}
+	}
+
+	public void checkSprint(float delta) {
+		if (canSprint()) {
+			camera.Fov = Mathf.Lerp(camera.Fov, fov*1.05f, delta*8);
+			sprinting = true;
+			return;
+		}
+		camera.Fov = Mathf.Lerp(camera.Fov, fov, delta*8);
+		sprinting = false;
+	}
+
+	public bool canSprint() {
+		return sprintEnabled && sprintInput && isMoving();
+	}
+
+	public bool isMoving() {
+		return Mathf.Abs(moveAxis.x) >= 0.5 || Mathf.Abs(moveAxis.y) >= 0.5;
+	}
+
+	public void updateCameraRotation() {
+		float horizontal = -mouseAxis.x * (mouseSensitivity / 100);
+		float vertical   = -mouseAxis.y * (mouseSensitivity / 100);
+		mouseAxis = new Vector2();
+		RotateY(Mathf.Deg2Rad(horizontal));
+		head.RotateX(Mathf.Deg2Rad(vertical));
+		if (head.Rotation.x < minHeadAngle)
+			head.Rotation = new Vector3(minHeadAngle, head.Rotation.y, head.Rotation.z);
+		if (head.Rotation.x > maxHeadAngle)
+			head.Rotation = new Vector3(maxHeadAngle, head.Rotation.y, head.Rotation.z);
+		mouseAxis = new Vector2();
 	}
 }
