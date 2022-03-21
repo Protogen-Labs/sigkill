@@ -1,10 +1,10 @@
 using Godot;
 
-public interface IWeapon {
-    float getDamage();
-    float getSpead();
-    float getLoudness();
-    int getAmount();
+public abstract class IWeapon : Node {
+    public abstract float getDamage();
+    public abstract float getSpead();
+    public abstract float getLoudness();
+    public abstract int getAmount();
 
-    void shoot(Node other);
+    public abstract void shoot(Node other);
 }

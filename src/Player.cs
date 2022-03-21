@@ -24,7 +24,9 @@ public class Player: KinematicBody {
 	int coyote = 0;
 
 	public override void _Ready() {
-		heldWeapon = Registry.WEAPON.get(new Identifier("pistol"));
+
+		
+
 		Input.SetMouseMode(Input.MouseMode.Captured);
 		head = GetNode<Spatial>(headPath);
 		camera = head.GetNode<Camera>(cameraPath);

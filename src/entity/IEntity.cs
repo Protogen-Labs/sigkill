@@ -1,7 +1,5 @@
-public interface IEntity {
-    float getHealth();
-    float getArmor();
-    void damage(float amount);
-    bool is2dOnly();
-    bool is3dOnly();
+public abstract class IEntity {
+    public abstract float getHealth();
+    public abstract float getArmor();
+    public abstract void damage(float amount);
 }
