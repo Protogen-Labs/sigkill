@@ -2,23 +2,23 @@ using Godot;
 
 public class PistolWeapon: IWeapon {
     public PistolWeapon() {
-
+        
     }
 
-    public float getDamage() {
+    public override float getDamage() {
         return 1;
     }
-    public float getSpead() {
+    public override float getSpead() {
         return 0;
     }
-    public float getLoudness() {
+    public override float getLoudness() {
         return 1;
     }
-    public int getAmount() {
+    public override int getAmount() {
         return 0;
     }
 
-    public void shoot(Node other) {
+    public override void shoot(Node other) {
 
     }
 }
