@@ -1,5 +1,6 @@
 using Godot;
 using static Settings;
+using Discord;
 
 public class Main: Node {
 	public override void _Ready() {
