@@ -8,7 +8,7 @@ public class PistolWeapon: IWeapon {
     public override float getDamage() {
         return 1;
     }
-    public override float getSpead() {
+    public override float getSpread() {
         return 0;
     }
     public override float getLoudness() {

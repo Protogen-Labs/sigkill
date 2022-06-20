@@ -1,8 +1,8 @@
 public class Settings {
-	public static float mouseSensitivity = 12;
+	public static float mouseSensitivity = 15;
 	public static float fov = 80;
 	public static float gravity = 30;
-	public static float walkSpeed = 15;
+	public static float walkSpeed = 17;
 	public static float sprintAdd = 5;
 	public static float acceleration = 8;
 	public static float deceleration = 10;
